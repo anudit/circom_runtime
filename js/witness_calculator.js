@@ -17,8 +17,8 @@ limitations under the License.
 
 */
 
+import { F1Field, Scalar } from "@anudit/ffjavascript";
 import { flatArray, fnvHash, toArray32 } from "./utils.js";
-import { Scalar, F1Field } from "ffjavascript";
 
 export default async function builder(code, options) {
 
@@ -27,16 +27,16 @@ export default async function builder(code, options) {
     let memorySize = 32767;
     let memory;
     let memoryAllocated = false;
-    while (!memoryAllocated){
-        try{
-            memory = new WebAssembly.Memory({initial:memorySize});
+    while (!memoryAllocated) {
+        try {
+            memory = new WebAssembly.Memory({ initial: memorySize });
             memoryAllocated = true;
-        } catch(err){
-            if(memorySize === 1){
+        } catch (err) {
+            if (memorySize === 1) {
                 throw err;
             }
             console.warn("Could not allocate " + memorySize * 1024 * 64 + " bytes. This may cause severe instability. Trying with " + memorySize * 1024 * 64 / 2 + " bytes");
-            memorySize = Math.floor(memorySize/2);
+            memorySize = Math.floor(memorySize / 2);
         }
     }
 
@@ -61,7 +61,7 @@ export default async function builder(code, options) {
             "memory": memory
         },
         runtime: {
-            exceptionHandler: function(code) {
+            exceptionHandler: function (code) {
                 let err;
                 if (code == 1) {
                     err = "Signal not found. ";
@@ -83,10 +83,10 @@ export default async function builder(code, options) {
             },
             // A new way of logging messages was added in Circom 2.0.7 that requires 2 new imports
             // `printErrorMessage` and `writeBufferMessage`.
-            printErrorMessage: function() {
+            printErrorMessage: function () {
                 errStr += getMessage() + "\n";
             },
-            writeBufferMessage: function() {
+            writeBufferMessage: function () {
                 const msg = getMessage();
                 // Any calls to `log()` will always end with a `\n`, so that's when we print and reset
                 if (msg === "\n") {
@@ -101,11 +101,11 @@ export default async function builder(code, options) {
                     msgStr += msg;
                 }
             },
-            showSharedRWMemory: function() {
+            showSharedRWMemory: function () {
                 const shared_rw_memory_size = instance.exports.getFieldNumLen32();
                 const arr = new Uint32Array(shared_rw_memory_size);
-                for (let j=0; j<shared_rw_memory_size; j++) {
-                    arr[shared_rw_memory_size-1-j] = instance.exports.readSharedRWMemory(j);
+                for (let j = 0; j < shared_rw_memory_size; j++) {
+                    arr[shared_rw_memory_size - 1 - j] = instance.exports.readSharedRWMemory(j);
                 }
 
                 // In circom 2.0.7, they changed the log() function to allow strings and changed the
@@ -122,39 +122,39 @@ export default async function builder(code, options) {
                     console.log(Scalar.fromArray(arr, 0x100000000));
                 }
             },
-            error: function(code, pstr, a,b,c,d) {
+            error: function (code, pstr, a, b, c, d) {
                 let errStr;
                 if (code == 7) {
-                    errStr=p2str(pstr) + " " + wc.getFr(b).toString() + " != " + wc.getFr(c).toString() + " " +p2str(d);
+                    errStr = p2str(pstr) + " " + wc.getFr(b).toString() + " != " + wc.getFr(c).toString() + " " + p2str(d);
                 } else if (code == 9) {
-                    errStr=p2str(pstr) + " " + wc.getFr(b).toString() + " " +p2str(c);
-                } else if ((code == 5)&&(options.sym)) {
-                    errStr=p2str(pstr)+ " " + options.sym.labelIdx2Name[c];
+                    errStr = p2str(pstr) + " " + wc.getFr(b).toString() + " " + p2str(c);
+                } else if ((code == 5) && (options.sym)) {
+                    errStr = p2str(pstr) + " " + options.sym.labelIdx2Name[c];
                 } else {
-                    errStr=p2str(pstr)+ " " + a + " " + b + " " + c + " " + d;
+                    errStr = p2str(pstr) + " " + a + " " + b + " " + c + " " + d;
                 }
                 console.log("ERROR: ", code, errStr);
                 throw new Error(errStr);
             },
-            log: function(a) {
+            log: function (a) {
                 console.log(wc.getFr(a).toString());
             },
-            logGetSignal: function(signal, pVal) {
+            logGetSignal: function (signal, pVal) {
                 if (options.logGetSignal) {
-                    options.logGetSignal(signal, wc.getFr(pVal) );
+                    options.logGetSignal(signal, wc.getFr(pVal));
                 }
             },
-            logSetSignal: function(signal, pVal) {
+            logSetSignal: function (signal, pVal) {
                 if (options.logSetSignal) {
-                    options.logSetSignal(signal, wc.getFr(pVal) );
+                    options.logSetSignal(signal, wc.getFr(pVal));
                 }
             },
-            logStartComponent: function(cIdx) {
+            logStartComponent: function (cIdx) {
                 if (options.logStartComponent) {
                     options.logStartComponent(cIdx);
                 }
             },
-            logFinishComponent: function(cIdx) {
+            logFinishComponent: function (cIdx) {
                 if (options.logFinishComponent) {
                     options.logFinishComponent(cIdx);
                 }
@@ -194,7 +194,7 @@ export default async function builder(code, options) {
     function getMessage() {
         var message = "";
         var c = instance.exports.getMessageChar();
-        while ( c != 0 ) {
+        while (c != 0) {
             message += String.fromCharCode(c);
             c = instance.exports.getMessageChar();
         }
@@ -206,7 +206,7 @@ export default async function builder(code, options) {
 
         const bytes = [];
 
-        for (let i=0; i8[p+i]>0; i++)  bytes.push(i8[p+i]);
+        for (let i = 0; i8[p + i] > 0; i++)  bytes.push(i8[p + i]);
 
         return String.fromCharCode.apply(null, bytes);
     }
@@ -222,8 +222,8 @@ class WitnessCalculatorCircom1 {
         const pRawPrime = this.instance.exports.getPRawPrime();
 
         const arr = new Array(this.n32);
-        for (let i=0; i<this.n32; i++) {
-            arr[this.n32-1-i] = this.i32[(pRawPrime >> 2) + i];
+        for (let i = 0; i < this.n32; i++) {
+            arr[this.n32 - 1 - i] = this.i32[(pRawPrime >> 2) + i];
         }
 
         this.prime = Scalar.fromArray(arr, 0x100000000);
@@ -232,8 +232,8 @@ class WitnessCalculatorCircom1 {
 
         this.mask32 = Scalar.fromString("FFFFFFFF", 16);
         this.NVars = this.instance.exports.getNVars();
-        this.n64 = Math.floor((this.Fr.bitLength - 1) / 64)+1;
-        this.R = this.Fr.e( Scalar.shiftLeft(1 , this.n64*64));
+        this.n64 = Math.floor((this.Fr.bitLength - 1) / 64) + 1;
+        this.R = this.Fr.e(Scalar.shiftLeft(1, this.n64 * 64));
         this.RInv = this.Fr.inv(this.R);
         this.sanityCheck = sanityCheck;
     }
@@ -247,10 +247,10 @@ class WitnessCalculatorCircom1 {
         const pSigOffset = this.allocInt();
         const pFr = this.allocFr();
         const keys = Object.keys(input);
-        keys.forEach( (k) => {
+        keys.forEach((k) => {
             const h = fnvHash(k);
-            const hMSB = parseInt(h.slice(0,8), 16);
-            const hLSB = parseInt(h.slice(8,16), 16);
+            const hMSB = parseInt(h.slice(0, 8), 16);
+            const hLSB = parseInt(h.slice(8, 16), 16);
             try {
                 this.instance.exports.getSignalOffset32(pSigOffset, 0, hMSB, hLSB);
             } catch (err) {
@@ -258,7 +258,7 @@ class WitnessCalculatorCircom1 {
             }
             const sigOffset = this.getInt(pSigOffset);
             const fArr = flatArray(input[k]);
-            for (let i=0; i<fArr.length; i++) {
+            for (let i = 0; i < fArr.length; i++) {
                 this.setFr(pFr, fArr[i]);
                 this.instance.exports.setSignal(0, 0, sigOffset + i, pFr);
             }
@@ -273,7 +273,7 @@ class WitnessCalculatorCircom1 {
 
         await self._doCalculateWitness(input, sanityCheck);
 
-        for (let i=0; i<self.NVars; i++) {
+        for (let i = 0; i < self.NVars; i++) {
             const pWitness = self.instance.exports.getPWitness(i);
             w.push(self.getFr(pWitness));
         }
@@ -299,32 +299,32 @@ class WitnessCalculatorCircom1 {
 
     allocInt() {
         const p = this.i32[0];
-        this.i32[0] = p+8;
+        this.i32[0] = p + 8;
         return p;
     }
 
     allocFr() {
         const p = this.i32[0];
-        this.i32[0] = p+this.n32*4 + 8;
+        this.i32[0] = p + this.n32 * 4 + 8;
         return p;
     }
 
     getInt(p) {
-        return this.i32[p>>2];
+        return this.i32[p >> 2];
     }
 
     setInt(p, v) {
-        this.i32[p>>2] = v;
+        this.i32[p >> 2] = v;
     }
 
     getFr(p) {
         const self = this;
-        const idx = (p>>2);
+        const idx = (p >> 2);
 
         if (self.i32[idx + 1] & 0x80000000) {
             const arr = new Array(self.n32);
-            for (let i=0; i<self.n32; i++) {
-                arr[self.n32-1-i] = self.i32[idx+2+i];
+            for (let i = 0; i < self.n32; i++) {
+                arr[self.n32 - 1 - i] = self.i32[idx + 2 + i];
             }
             const res = self.Fr.e(Scalar.fromArray(arr, 0x100000000));
             if (self.i32[idx + 1] & 0x40000000) {
@@ -335,7 +335,7 @@ class WitnessCalculatorCircom1 {
 
         } else {
             if (self.i32[idx] & 0x80000000) {
-                return self.Fr.e( self.i32[idx] - 0x100000000);
+                return self.Fr.e(self.i32[idx] - 0x100000000);
             } else {
                 return self.Fr.e(self.i32[idx]);
             }
@@ -356,14 +356,13 @@ class WitnessCalculatorCircom1 {
         const minShort = self.Fr.neg(self.Fr.e("80000000", 16));
         const maxShort = self.Fr.e("7FFFFFFF", 16);
 
-        if (  (self.Fr.geq(v, minShort))
-            &&(self.Fr.leq(v, maxShort)))
-        {
+        if ((self.Fr.geq(v, minShort))
+            && (self.Fr.leq(v, maxShort))) {
             let a;
             if (self.Fr.geq(v, self.Fr.zero)) {
                 a = Scalar.toNumber(v);
             } else {
-                a = Scalar.toNumber( self.Fr.sub(v, minShort));
+                a = Scalar.toNumber(self.Fr.sub(v, minShort));
                 a = a - 0x80000000;
                 a = 0x100000000 + a;
             }
@@ -375,10 +374,10 @@ class WitnessCalculatorCircom1 {
         self.i32[(p >> 2)] = 0;
         self.i32[(p >> 2) + 1] = 0x80000000;
         const arr = Scalar.toArray(v, 0x100000000);
-        for (let i=0; i<self.n32; i++) {
-            const idx = arr.length-1-i;
+        for (let i = 0; i < self.n32; i++) {
+            const idx = arr.length - 1 - i;
 
-            if ( idx >=0) {
+            if (idx >= 0) {
                 self.i32[(p >> 2) + 2 + i] = arr[idx];
             } else {
                 self.i32[(p >> 2) + 2 + i] = 0;
@@ -396,8 +395,8 @@ class WitnessCalculatorCircom2 {
 
         this.instance.exports.getRawPrime();
         const arr = new Array(this.n32);
-        for (let i=0; i<this.n32; i++) {
-            arr[this.n32-1-i] = this.instance.exports.readSharedRWMemory(i);
+        for (let i = 0; i < this.n32; i++) {
+            arr[this.n32 - 1 - i] = this.instance.exports.readSharedRWMemory(i);
         }
         this.prime = Scalar.fromArray(arr, 0x100000000);
 
@@ -415,23 +414,23 @@ class WitnessCalculatorCircom2 {
         this.instance.exports.init((this.sanityCheck || sanityCheck) ? 1 : 0);
         const keys = Object.keys(input);
         var input_counter = 0;
-        keys.forEach( (k) => {
+        keys.forEach((k) => {
             const h = fnvHash(k);
-            const hMSB = parseInt(h.slice(0,8), 16);
-            const hLSB = parseInt(h.slice(8,16), 16);
+            const hMSB = parseInt(h.slice(0, 8), 16);
+            const hLSB = parseInt(h.slice(8, 16), 16);
             const fArr = flatArray(input[k]);
-            for (let i=0; i<fArr.length; i++) {
-        const arrFr = toArray32(fArr[i],this.n32)
-        for (let j=0; j<this.n32; j++) {
-            this.instance.exports.writeSharedRWMemory(j,arrFr[this.n32-1-j]);
-        }
-        try {
-                    this.instance.exports.setInputSignal(hMSB, hLSB,i);
-            input_counter++;
-        } catch (err) {
-            // console.log(`After adding signal ${i} of ${k}`)
+            for (let i = 0; i < fArr.length; i++) {
+                const arrFr = toArray32(fArr[i], this.n32)
+                for (let j = 0; j < this.n32; j++) {
+                    this.instance.exports.writeSharedRWMemory(j, arrFr[this.n32 - 1 - j]);
+                }
+                try {
+                    this.instance.exports.setInputSignal(hMSB, hLSB, i);
+                    input_counter++;
+                } catch (err) {
+                    // console.log(`After adding signal ${i} of ${k}`)
                     throw new Error(err);
-        }
+                }
             }
 
         });
@@ -445,11 +444,11 @@ class WitnessCalculatorCircom2 {
 
         await this._doCalculateWitness(input, sanityCheck);
 
-        for (let i=0; i<this.witnessSize; i++) {
+        for (let i = 0; i < this.witnessSize; i++) {
             this.instance.exports.getWitness(i);
-        const arr = new Uint32Array(this.n32);
-            for (let j=0; j<this.n32; j++) {
-            arr[this.n32-1-j] = this.instance.exports.readSharedRWMemory(j);
+            const arr = new Uint32Array(this.n32);
+            for (let j = 0; j < this.n32; j++) {
+                arr[this.n32 - 1 - j] = this.instance.exports.readSharedRWMemory(j);
             }
             w.push(Scalar.fromArray(arr, 0x100000000));
         }
@@ -458,8 +457,8 @@ class WitnessCalculatorCircom2 {
     }
 
     async calculateWTNSBin(input, sanityCheck) {
-        const buff32 = new Uint32Array(this.witnessSize*this.n32+this.n32+11);
-        const buff = new  Uint8Array( buff32.buffer);
+        const buff32 = new Uint32Array(this.witnessSize * this.n32 + this.n32 + 11);
+        const buff = new Uint8Array(buff32.buffer);
         await this._doCalculateWitness(input, sanityCheck);
 
         //"wtns"
@@ -477,12 +476,12 @@ class WitnessCalculatorCircom2 {
         //id section 1
         buff32[3] = 1;
 
-        const n8 = this.n32*4;
+        const n8 = this.n32 * 4;
         //id section 1 length in 64bytes
         const idSection1length = 8 + n8;
         const idSection1lengthHex = idSection1length.toString(16);
-            buff32[4] = parseInt(idSection1lengthHex.slice(0,8), 16);
-            buff32[5] = parseInt(idSection1lengthHex.slice(8,16), 16);
+        buff32[4] = parseInt(idSection1lengthHex.slice(0, 8), 16);
+        buff32[5] = parseInt(idSection1lengthHex.slice(8, 16), 16);
 
         //this.n32
         buff32[6] = n8;
@@ -491,8 +490,8 @@ class WitnessCalculatorCircom2 {
         this.instance.exports.getRawPrime();
 
         var pos = 7;
-        for (let j=0; j<this.n32; j++) {
-            buff32[pos+j] = this.instance.exports.readSharedRWMemory(j);
+        for (let j = 0; j < this.n32; j++) {
+            buff32[pos + j] = this.instance.exports.readSharedRWMemory(j);
         }
         pos += this.n32;
 
@@ -505,16 +504,16 @@ class WitnessCalculatorCircom2 {
         pos++;
 
         // section 2 length
-        const idSection2length = n8*this.witnessSize;
+        const idSection2length = n8 * this.witnessSize;
         const idSection2lengthHex = idSection2length.toString(16);
-        buff32[pos] = parseInt(idSection2lengthHex.slice(0,8), 16);
-        buff32[pos+1] = parseInt(idSection2lengthHex.slice(8,16), 16);
+        buff32[pos] = parseInt(idSection2lengthHex.slice(0, 8), 16);
+        buff32[pos + 1] = parseInt(idSection2lengthHex.slice(8, 16), 16);
 
         pos += 2;
-        for (let i=0; i<this.witnessSize; i++) {
+        for (let i = 0; i < this.witnessSize; i++) {
             this.instance.exports.getWitness(i);
-            for (let j=0; j<this.n32; j++) {
-                buff32[pos+j] = this.instance.exports.readSharedRWMemory(j);
+            for (let j = 0; j < this.n32; j++) {
+                buff32[pos + j] = this.instance.exports.readSharedRWMemory(j);
             }
             pos += this.n32;
         }

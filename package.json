@@ -1,6 +1,6 @@
 {
-  "name": "circom_runtime",
-  "version": "0.1.23",
+  "name": "@anudit/circom_runtime",
+  "version": "0.1.24",
   "description": "Circom runtime",
   "type": "module",
   "exports": {
@@ -33,11 +33,11 @@
     "url": "https://github.com/iden3/circom_runtime/issues"
   },
   "homepage": "https://github.com/iden3/circom_runtime#readme",
-  "dependencies": {
-    "ffjavascript": "0.2.59"
-  },
   "devDependencies": {
     "eslint": "^8.17.0",
     "rollup": "^2.36.2"
+  },
+  "dependencies": {
+    "@anudit/ffjavascript": "^0.2.61"
   }
 }

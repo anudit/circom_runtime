@@ -21,9 +21,9 @@ import fs from "fs";
 const pkg = JSON.parse(fs.readFileSync("./package.json"));
 const version = pkg.version;
 
-import WitnessCalculatorBuilder from "./js/witness_calculator.js";
-import { utils } from "ffjavascript";
+import { utils } from "@anudit/ffjavascript";
 import yargs from "yargs";
+import WitnessCalculatorBuilder from "./js/witness_calculator.js";
 
 
 
@@ -42,9 +42,9 @@ const argv = yargs
     repo directory at  https://github.com/iden3/circom `)
     .argv;
 
-const inputFileName = typeof(argv.input) === "string" ?  argv.input : "input.json";
-const outputFileName = typeof(argv.output) === "string" ?  argv.output : "witness.bin";
-const wasmFileName = typeof(argv.wasm) === "string" ?  argv.wasm : "circuit.wasm";
+const inputFileName = typeof (argv.input) === "string" ? argv.input : "input.json";
+const outputFileName = typeof (argv.output) === "string" ? argv.output : "witness.bin";
+const wasmFileName = typeof (argv.wasm) === "string" ? argv.wasm : "circuit.wasm";
 
 
 async function run() {
